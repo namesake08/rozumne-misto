@@ -1,63 +1,53 @@
-import sys
-from PyQt5.QtWidgets import *
+# -*- coding: utf-8 -*-
+
+import requests
+email = "test@rmplatform.com"
+password = "test1234"
 
 
-class Settings(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
+class Login(object):
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
 
-    def initUI(self):
-        # Подписи для полей
-        Login = QLabel('Login')
-        Password = QLabel('Password')
-        # Поля
-        LoginEditField = QLineEdit()
-        PasswordEditField = QLineEdit()
-        LogInButton = QPushButton('Log in', self)
-        LogInButton.move(200, 250)
-        grid = QGridLayout()
-        grid.setSpacing(1)
+    login_dict = {"notify_method": "login", "email": email, "password": password}
+    # Make login pass validation check
 
-        grid.addWidget(Login, 1, 0)
-        grid.addWidget(LoginEditField, 1, 1)
-
-        grid.addWidget(Password, 2, 0)
-        grid.addWidget(PasswordEditField, 2, 1)
-
-        self.setLayout(grid)
-
-        self.setGeometry(350, 350, 350, 350)
-        self.setWindowTitle('Settings')
-        self.show()
+    def login_request(self):
+        login_response = requests.post("http://rmnova.30meridian.com/API", json=self.login_dict)
+        token = login_response.json()
+        return token
 
 
+class Fio(object):
+    def __init__(self, filename):
+        self.filename = filename
 
-class StandartSetting(QWidget):
-    def __init__(self, parent=None):
-        super.__init__()
-        self.InitUI(self)
+    def writing(self):
+        print(Login().login_request())
+        # with open(self.filename, "r+") as writed_file:
+        #     writed_file.write(str(Login.login_request()))
 
-    def InitUI(self):
-        Login = QLabel('Login')
-        self.LoginInp = QLabel(self)
-        Password = QLabel('Password')
-        self.PasswordInp = QLabel(self)
-        LogOutButton = QPushButton('Log out', self)
-        #LogOutButton.click(self.logOutButton)
-        LogOutButton.move(200, 250)
-
-    def loginbutton(self, login, password):
-        self.LoginInp.setText(login)
-        self.LoginInp.adjustSize()
-        self.PasswordInp.setText(password)
-        self.PasswordInp.adjustSize()
-
-    def logOutButton(self):
-        pass
+    def parsing(self):
+        with open(self.filename, "r+") as read_file:
+            for line in read_file:
+                token = line[11:43]
+        return token
 
 
-def run():
-    app = QApplication(sys.argv)
-    ex = Settings()
-    sys.exit(app.exec_())
+class LastNotify(object):
+    def __init__(self, email, token): #Как передать token из Fio.parsing
+        self.email = email
+        self.token = token
+        self.last_notify_params = {"notify_method": "get_last", "email": email, "token": token}
+
+    def last_notify(self):
+        get_last_notify_response = requests.post("http://rmnova.30meridian.com/API", json=self.last_notify_params)
+
+
+testUser1 = Login(email, password)#передали мыло пароль в класс Login, сохранили в переменную
+something = testUser1.login_request()#вызвали метод класса, сохранили в переменную
+wr= Fio("config.xml").writing()#wr- переменная, хранящая вызов метода writing клaсса Fio (ЗАЧЕМ)
+prs = Fio("config.xml").parsing()#переменная хранящая вызов метода parsing, который возвращает token
+ln = LastNotify(email, prs)#object which saves email and token
+ln.last_notify()#call last_notify method

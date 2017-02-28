@@ -1,26 +1,11 @@
-# -*- coding: utf-8 -*-
-import json
 import requests
 import signal
 import os
 import gi
-# import sys
-# try:
-#     import pygtk
-#     pygtk.require("2.0")
-# except:
-#     pass
-# try:
-#     import gtk
-#     import gtk.glade
-# except:
-#     print("GTK Not Availible")
-#     sys.exit(1)
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Notify', '0.7')
-gi.require_version('AppIndicator3', '0.1')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk
 from gi.repository import Notify
 from gi.repository import AppIndicator3
 
@@ -52,8 +37,6 @@ class TrayIcon:
 
 
 class Handler:
-    filename = "config.xml"
-
     def __init__(self):
         self.window_is_hidden = True
 
@@ -85,32 +68,9 @@ class Handler:
 
         login_response = requests.post("http://rmnova.30meridian.com/API", json=login_dict)
         token = login_response.json()
-        window.hide()
-        LastNotify(email=values['Login'], token=json.loads(token)['token'])
-        #gobject.timeout_add(300000, self.periodic) #gobject - объект PyGObject
+        return token
 
-    # def startCycleTimer(self, counter):
-    #     GObject.timeout_add_seconds(15000, self.displaytimer(counter))
-
-    def writing(self):
-        with open(self.filename, "r+") as writed_file:
-            writed_file.write()
-
-    def parsing(self):
-        with open(self.filename, "r+") as read_file:
-           for line in read_file:
-               token = line[11:43]
-
-
-class LastNotify(object):
-    def __init__(self, email, token):
-        self.email = email
-        self.token = token
-        self.last_notify_params = {"notify_method": "get_last", "email": email, "token": token}
-
-
-    def last_notify_cicle(self):
-        get_last_notify_response = requests.post("http://rmnova.30meridian.com/API", json=self.last_notify_params)
+    #gobject.timeout_add(100, self.periodic)
 
 
 if __name__ == '__main__':
@@ -129,6 +89,5 @@ if __name__ == '__main__':
     menu = builder.get_object('menu1')
     icon = TrayIcon(APPID, ICON, menu)
     Notify.init(APPID)
-    #print builder.get_objects()
 
     Gtk.main()
